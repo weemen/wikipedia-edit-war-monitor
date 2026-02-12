@@ -1,8 +1,10 @@
+import sbt._
+
 val Http4sVersion = "0.23.32"
 val MunitVersion = "0.7.29"
 val LogbackVersion = "1.4.14"
 val MunitCatsEffectVersion = "1.0.6"
-val JansiVersion = "2.4.1"
+val JansiVersion = "1.18"
 
 lazy val root = (project in file("."))
   .settings(
@@ -20,5 +22,18 @@ lazy val root = (project in file("."))
       "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
       "org.fusesource.jansi" % "jansi"           % JansiVersion,
     ),
-    testFrameworks += new TestFramework("munit.Framework")
+    testFrameworks += new TestFramework("munit.Framework"),
+    Compile / run / fork := true,
+    // Enable color support in forked JVM
+    Compile / run / javaOptions ++= Seq(
+      "-Dorg.fusesource.jansi.Ansi.disable=false",
+      "-Djansi.force=true"
+    ),
+    // Set environment to force color/TTY detection
+    Compile / run / envVars := Map(
+      "TERM" -> "xterm-256color"
+    ),
+    // Preserve stdin/stdout for colors and configure output
+    Compile / run / connectInput := true,
+    Compile / run / outputStrategy := Some(StdoutOutput)
   )
