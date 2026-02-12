@@ -23,6 +23,7 @@
     <orderEntry type="library" name="sbt: org.scalameta:munit_3:0.7.29:jar" level="project" />
     <orderEntry type="library" name="sbt: org.typelevel:munit-cats-effect-3_3:1.0.6:jar" level="project" />
     <orderEntry type="library" name="sbt: ch.qos.logback:logback-classic:1.4.14:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.fusesource.jansi:jansi:2.4.1:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scala-lang:scala-library:2.13.16:jar" level="project" />
     <orderEntry type="library" name="sbt: org.http4s:http4s-ember-core_3:0.23.32:jar" level="project" />
     <orderEntry type="library" name="sbt: org.http4s:http4s-server_3:0.23.32:jar" level="project" />
