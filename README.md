@@ -9,12 +9,26 @@
 
 ### The Project Concept: A system that detects "Edit Wars" (rapid back-and-forth reverts) or monitors vandalism in real-time.
 
-### Architecture Twist:
+### Architecture key components:
 
-- Ingestion: Connect via HTTP and parse the SSE stream (lines starting with data:).
-- Processing (Fiber 1 - The Counter): Aggregate edits by user_name or title. If a single page gets > 5 edits in 10 seconds, flag it as "Trending/Hot".
-- Processing (Fiber 2 - The Bot Detector): Filter for the bot: true flag. Calculate the ratio of Human vs. Bot activity in real-time.
-- Sink: Store the "Most Edited Pages of the Hour" in Redis or Postgres.
+**Ingestion Layer:**
+
+- **Ingestion Fiber:** Connect via HTTP and parse the SSE stream (lines starting with data:).
+- **JSON Decoder:** Transform raw SSE lines into structured `WikiEdit` objects using Circe.
+- **Topic/Broadcast Hub:** Single-producer, multi-subscriber pattern using `fs2.concurrent.Topic`. Broadcasts each `WikiEdit` to all parallel processing fibers without opening multiple connections to Wikipedia.
+
+**Processing Layer (Parallel Fibers):**
+
+- **Fiber 1 - The Counter:** Aggregate edits by user_name or title. If a single page gets > 5 edits in 10 seconds, flag it as "Trending/Hot". Outputs trending pages.
+- **Fiber 2 - The Bot Detector:** Filter for the bot: true flag. Calculate the ratio of Human vs. Bot activity in real-time. Updates activity statistics.
+- **Fiber 3 - Edit War Detector:** Maintain a sliding window of recent edits per page. Detect rapid back-and-forth reverts by tracking edit patterns and revert comments. When velocity exceeds threshold (e.g., 3+ reverts in 2 minutes with multiple participants), emit an `EditWarAlert`.
+
+**Sink Layer:**
+
+- **Redis/Postgres:** Persistent storage for "Most Edited Pages of the Hour" from The Counter.
+- **Console Dashboard:** Real-time display of Bot vs Human activity statistics and trending pages.
+- **Alert Queue:** Bounded `fs2.concurrent.Queue` that buffers edit war alerts with backpressure, decoupling detection from downstream alerting.
+- **Slack/Discord Webhook (Optional):** Human notification channel for high-priority edit war alerts, drained from the Alert Queue with rate limiting.
 
 Because SSE is just a long-lived HTTP request, handling the network interruptions is critical. You will learn how to use fs2.Stream.lines to chunk the incoming bytes into lines, and then decode the JSON.
 
@@ -22,19 +36,26 @@ Because SSE is just a long-lived HTTP request, handling the network interruption
 
 ```mermaid
 graph LR
-    A[Wikimedia SSE] -->|HTTP Stream| B(Ingestion Fiber)
-    B -->|Parse JSON| C{Broadcast Hub}
+    A[Wikimedia SSE Endpoint] -->|SSE Stream| B(Ingestion Fiber)
+    B -->|Parse SSE Lines| C[JSON Decoder]
+    C -->|WikiEdit Objects| D{Topic/Broadcast Hub}
 
-    subgraph "Parallel Processing"
-    C -->|Stream 1| D[Vandalism Detector]
-    C -->|Stream 2| E[Language Aggregator]
+    subgraph "Parallel Processing Fibers"
+    D -->|Stream 1| E[The Counter]
+    D -->|Stream 2| F[The Bot Detector]
+    D -->|Stream 3| G[Edit War Detector]
     end
 
-    D -->|Filter 'revert' & 'patrolled'| F[Alert Queue]
-    E -->|Group By 'server_name'| G[Live Stats Dashboard]
+    E -->|Aggregate by title/user| H[Trending Pages]
+    F -->|Calculate Bot vs Human Ratio| I[Activity Stats]
+    G -->|Track rapid reverts| J[Edit War Alerts]
 
-    F -->|Log| H[Slack/Discord Webhook]
-    G -->|Update| I[Console/Database]
+    H -->|Store| K[(Redis/Postgres)]
+    I -->|Update| L[Console Dashboard]
+    J -->|Flag & Log| M[Alert Queue]
+
+    K -.->|Most Edited Pages of Hour| L
+    M -.->|Optional| N[Slack/Discord Webhook]
 ```
 
 ## 🛠 Tech Stack
@@ -70,7 +91,7 @@ Detecting an edit war requires "memory." You need to track how many times `Page 
 
 ## 🧪 Advanced Features to Add
 
-To turn this from a "weekend project" into a "Senior-level portfolio piece" I want to add:
+To turn this from a "weekend project" into a "Senior-level portfolio piece" I might add:
 
 ### A. The "Sentiment" Filter
 

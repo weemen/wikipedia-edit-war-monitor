@@ -24,7 +24,6 @@ object WikiSource:
       val request = GET(uri"https://stream.wikimedia.org/v2/stream/recentchange")
       
       client.stream(request).flatMap { response =>
-//        println(response)
         response.body
           .through(fs2.text.utf8.decode)
           .through(fs2.text.lines)
