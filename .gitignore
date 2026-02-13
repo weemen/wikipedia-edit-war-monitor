@@ -13,6 +13,7 @@
 target/
 project/target/
 project/project/target/
+project/project/project/
 .bsp/
 
 # Scala-IDE & IntelliJ IDEA
