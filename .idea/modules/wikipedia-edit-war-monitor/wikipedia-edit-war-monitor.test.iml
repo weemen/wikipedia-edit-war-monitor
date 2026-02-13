@@ -4,24 +4,24 @@
     <option name="name" value="wikipedia-edit-war-monitor.test" />
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_11">
-    <output-test url="file://$MODULE_DIR$/../../../target/scala-3.3.1/test-classes" />
+    <output-test url="file://$MODULE_DIR$/../../../target/scala-3.3.7/test-classes" />
     <exclude-output />
     <content url="file://$MODULE_DIR$/../../../src/test">
       <sourceFolder url="file://$MODULE_DIR$/../../../src/test/scala" isTestSource="true" />
     </content>
-    <content url="file://$MODULE_DIR$/../../../target/scala-3.3.1/resource_managed/test" />
-    <content url="file://$MODULE_DIR$/../../../target/scala-3.3.1/src_managed/test" />
+    <content url="file://$MODULE_DIR$/../../../target/scala-3.3.7/resource_managed/test" />
+    <content url="file://$MODULE_DIR$/../../../target/scala-3.3.7/src_managed/test" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="sbt: scala-sdk-3.3.1" level="project" />
+    <orderEntry type="library" name="sbt: scala-sdk-3.3.7" level="project" />
     <orderEntry type="module" module-name="wikipedia-edit-war-monitor.main" />
-    <orderEntry type="library" name="sbt: org.scala-lang:scala3-library_3:3.3.6:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-lang:scala3-library_3:3.3.7:jar" level="project" />
     <orderEntry type="library" name="sbt: org.http4s:http4s-ember-server_3:0.23.32:jar" level="project" />
     <orderEntry type="library" name="sbt: org.http4s:http4s-ember-client_3:0.23.32:jar" level="project" />
     <orderEntry type="library" name="sbt: org.http4s:http4s-circe_3:0.23.32:jar" level="project" />
     <orderEntry type="library" name="sbt: org.http4s:http4s-dsl_3:0.23.32:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.scalameta:munit_3:0.7.29:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.typelevel:munit-cats-effect-3_3:1.0.6:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scalameta:munit_3:1.2.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.typelevel:munit-cats-effect_3:2.1.0:jar" level="project" />
     <orderEntry type="library" name="sbt: ch.qos.logback:logback-classic:1.4.14:jar" level="project" />
     <orderEntry type="library" name="sbt: org.fusesource.jansi:jansi:1.18:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scala-lang:scala-library:2.13.16:jar" level="project" />
@@ -34,7 +34,8 @@
     <orderEntry type="library" name="sbt: org.http4s:http4s-jawn_3:0.23.32:jar" level="project" />
     <orderEntry type="library" name="sbt: io.circe:circe-core_3:0.14.8:jar" level="project" />
     <orderEntry type="library" name="sbt: io.circe:circe-jawn_3:0.14.8:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.scalameta:junit-interface:0.7.29:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scalameta:junit-interface:1.2.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scalameta:munit-diff_3:1.2.2:jar" level="project" />
     <orderEntry type="library" name="sbt: junit:junit:4.13.2:jar" level="project" />
     <orderEntry type="library" name="sbt: org.typelevel:cats-effect_3:3.6.1:jar" level="project" />
     <orderEntry type="library" name="sbt: ch.qos.logback:logback-core:1.4.14:jar" level="project" />
