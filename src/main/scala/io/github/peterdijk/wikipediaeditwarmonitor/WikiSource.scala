@@ -37,6 +37,16 @@ object WikiSource:
         .filter(_.startsWith("data: ")) // Only process data lines
         .map(_.stripPrefix("data: "))
 
+    // TODO: make into Decoder
+    def formatOutput(
+        count: Int,
+        retries: Int,
+        elapsedTime: FiniteDuration,
+        line: String
+    ) = println(
+      s"Event #$count | retries: $retries (elapsed: ${elapsedTime.toSeconds}s) | Average rate: ${count.toDouble / elapsedTime.toSeconds} events/s | Line: ${line.take(80)}"
+    )
+
     def streamEvents: F[Unit] =
       val request = GET(
         uri"https://stream.wikimedia.org/v2/stream/recentchange"
@@ -58,16 +68,13 @@ object WikiSource:
             .stream(request)
             .flatMap { response =>
               processResponseLines(response)
-                .parEvalMap(10)(line =>
+                .parEvalMap(1)(line =>
                   for {
                     count <- counterRef.updateAndGet(_ + 1)
                     currentTime <- Async[F].monotonic
                     elapsedTime = currentTime - startTime
-                    _ <- Concurrent[F].delay(
-                      println(
-                        s"Event #$count | retries: $retries (elapsed: ${elapsedTime.toSeconds}s) | Average rate: ${count.toDouble / elapsedTime.toSeconds} events/s | Line: ${line.take(80)}"
-                      )
-                    )
+                    _ <- Concurrent[F]
+                      .delay(formatOutput(count, retries, elapsedTime, line))
                   } yield ()
                 )
             }
