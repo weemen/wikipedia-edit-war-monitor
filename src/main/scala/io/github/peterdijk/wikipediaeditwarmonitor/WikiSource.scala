@@ -35,8 +35,12 @@ object WikiSource:
     // Parse SSE events with id and data fields.
     def processResponseLines(response: Response[F]): Stream[F, SSEEvent] =
       response.body
-        .through(fs2.text.utf8.decode)
-        .through(fs2.text.lines)
+        .through((input: Stream[F, Byte]) => {
+          fs2.text.utf8.decode(input)
+        })
+        .through((input: Stream[[x] =>> F[x], String]) => {
+          fs2.text.lines(input)
+        })
         .filter(!_.startsWith(":")) // Filter out SSE comment lines (heartbeats)
         .split(_.isEmpty) // Split on blank lines (event boundaries)
         .map { lines =>
