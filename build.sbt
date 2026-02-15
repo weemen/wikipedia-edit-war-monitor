@@ -1,10 +1,12 @@
 import sbt._
 
 val Http4sVersion = "0.23.32"
-val MunitVersion = "1.2.2"
+val JansiVersion = "1.18"
 val LogbackVersion = "1.4.14"
 val MunitCatsEffectVersion = "2.1.0"
-val JansiVersion = "1.18"
+val MunitVersion = "1.2.2"
+val Otel4s = "0.15.1"
+val OpenTelemetryJava = "1.59.0"
 
 lazy val root = (project in file("."))
   .settings(
@@ -17,6 +19,9 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-ember-client" % Http4sVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
+      "org.typelevel" %% "otel4s-core" % Otel4s,
+      "org.typelevel" %% "otel4s-oteljava" % Otel4s,
+      "io.opentelemetry" % "opentelemetry-exporter-otlp" % OpenTelemetryJava % Runtime,
       "org.scalameta" %% "munit" % MunitVersion % Test,
       "org.typelevel" %% "munit-cats-effect" % MunitCatsEffectVersion % Test,
       "ch.qos.logback" % "logback-classic" % LogbackVersion,

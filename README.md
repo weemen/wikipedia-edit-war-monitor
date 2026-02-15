@@ -143,3 +143,21 @@ case class EditWarAlert(
 1. **Phase 1:** Use `Http4s` client to simply print the stream of strings from the Wikimedia URL to your console.
 2. **Phase 2:** Implement a Circe decoder to turn those strings into `WikiEdit` objects.
 3. **Phase 3:** Introduce the `Topic` to split the stream into a "Bot Stats" fiber and a "Human Activity" fiber.
+
+## Using tracing
+The app supports metrics and tracing capabilities using Otel4s.  
+To view traces you can do this by running Jaeger.  
+For instructions see below: 
+
+1. Run Jaeger
+```shell
+docker run --rm --name jaeger \                                                                     ✔  11:32:01 
+  -p 16686:16686 \
+  -p 4317:4317 \
+  -p 4318:4318 \
+  -p 5778:5778 \
+  -p 9411:9411 \
+  cr.jaegertracing.io/jaegertracing/jaeger:2.15.0
+```
+2. Start the app
+3. Open http://localhost:16686/ in your browser
