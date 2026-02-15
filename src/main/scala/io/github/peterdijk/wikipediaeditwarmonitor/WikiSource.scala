@@ -109,17 +109,18 @@ object WikiSource:
             .stream(request)
             .flatMap { response =>
               processResponseLines(response)
-                .parEvalMap(1)(event =>
-                  for {
-                    _ <- event.id.fold(Async[F].unit)(id =>
-                      lastIdRef.set(Some(id))
-                    )
-                    count <- counterRef.updateAndGet(_ + 1)
-                    currentTime <- Async[F].monotonic
-                    elapsedTime = currentTime - startTime
-                    _ <- Concurrent[F]
-                      .delay(formatOutput(count, retries, elapsedTime, event))
-                  } yield ()
+                .parEvalMap(1)(
+                  event => // is there still backpressure if its places after processResponseLines?
+                    for {
+                      _ <- event.id.fold(Async[F].unit)(id =>
+                        lastIdRef.set(Some(id))
+                      )
+                      count <- counterRef.updateAndGet(_ + 1)
+                      currentTime <- Async[F].monotonic
+                      elapsedTime = currentTime - startTime
+                      _ <- Concurrent[F]
+                        .delay(formatOutput(count, retries, elapsedTime, event))
+                    } yield ()
                 )
             }
             .handleErrorWith { _ =>
