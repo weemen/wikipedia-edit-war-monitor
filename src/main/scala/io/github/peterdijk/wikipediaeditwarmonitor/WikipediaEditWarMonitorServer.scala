@@ -17,13 +17,11 @@ object WikipediaEditWarMonitorServer:
     EmberClientBuilder.default[F].build.use { client =>
       Topic[F, ServerSentEvent].flatMap { broadcastHub =>
         val wikiStream = WikiStream.impl[F](client, broadcastHub)
+        val wikiEventLogger = WikiEventLogger(broadcastHub)
+
         val helloWorldAlg = HelloWorld.impl[F]
         val jokeAlg = Jokes.impl[F](client)
 
-        // Combine Service Routes into an HttpApp.
-        // Can also be done via a Router if you
-        // want to extract a segments not checked
-        // in the underlying routes.
         val httpApp = (
           WikipediaEditWarMonitorRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
             WikipediaEditWarMonitorRoutes.jokeRoutes[F](jokeAlg)
@@ -32,12 +30,10 @@ object WikipediaEditWarMonitorServer:
         // With Middlewares in place
         val finalHttpApp = Logger.httpApp(true, true)(httpApp)
 
-        val wikiEventLogger = WikiEventLogger(broadcastHub)
         val loggingFiber = Async[F].start(wikiEventLogger.subscribeAndLog)
+        val inputStreamFiber = Async[F].start(wikiStream.start)
 
-        // Start the Wikipedia SSE stream as a background fiber
-        val backgroundFiber = Async[F].start(wikiStream.start)
-        backgroundFiber *> loggingFiber *>
+        inputStreamFiber *> loggingFiber *>
           EmberServerBuilder
             .default[F]
             .withHost(ipv4"0.0.0.0")

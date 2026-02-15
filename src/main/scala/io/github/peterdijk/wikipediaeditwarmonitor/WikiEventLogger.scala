@@ -22,7 +22,7 @@ final case class WikiEventLogger[F[_]: Async](
   def subscribeAndLog: F[Unit] =
     val stream = broadcastHub.subscribe(1000)
 
-    val counters = for {
+    val log = for {
       startTime <- Stream.eval(Async[F].monotonic)
       counterRef <- Stream.eval(Ref[F].of(0))
       _ <- stream.parEvalMap(10) { event =>
@@ -36,4 +36,4 @@ final case class WikiEventLogger[F[_]: Async](
         } yield ()
       }
     } yield ()
-    counters.compile.drain
+    log.compile.drain
