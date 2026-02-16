@@ -1,47 +1,62 @@
 package io.github.peterdijk.wikipediaeditwarmonitor
 
-import cats.effect.Async
-import cats.syntax.all._
-import com.comcast.ip4s._
+import cats.effect.{Async, LiftIO, Resource}
+import cats.syntax.all.*
+import com.comcast.ip4s.*
 import fs2.io.net.Network
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.implicits._
+import org.http4s.implicits.*
 import org.http4s.server.middleware.Logger
 import fs2.concurrent.Topic
-
-import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.WikiEdit
+import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{WikiEdit, TracedWikiEdit}
+import org.typelevel.otel4s.oteljava.OtelJava
+import org.typelevel.otel4s.trace.Tracer
+import cats.effect.LiftIO
+import io.github.peterdijk.wikipediaeditwarmonitor.middleware.HttpTracingMiddleware
 
 object WikipediaEditWarMonitorServer:
 
-  def run[F[_]: Async: Network]: F[Nothing] = {
-    EmberClientBuilder.default[F].build.use { client =>
-      Topic[F, WikiEdit].flatMap { broadcastHub =>
-        val wikiStream = WikiStream.impl[F](client, broadcastHub)
-        val wikiEventLogger = WikiEventLogger(broadcastHub)
+  def run[F[_]: Async: Network: LiftIO]: F[Nothing] = {
+    val resources = for {
+      client <- EmberClientBuilder.default[F].build
+      otel <- OtelJava.autoConfigured[F]()
+      tracer <- Resource.eval(otel.tracerProvider.get("WikipediaEditWarMonitor"))
+      broadcastHub <- Resource.eval(Topic[F, TracedWikiEdit])
+    } yield (client, tracer, broadcastHub)
 
-        val helloWorldAlg = HelloWorld.impl[F]
-        val jokeAlg = Jokes.impl[F](client)
+    resources.use { case (client, tracer, broadcastHub) =>
+      given Tracer[F] = tracer
 
-        val httpApp = (
-          WikipediaEditWarMonitorRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
-            WikipediaEditWarMonitorRoutes.jokeRoutes[F](jokeAlg)
-        ).orNotFound
+      // both use the same tracer instance, but different spans will be created in each
+      // they are concurrently running, but the spans will be separate and can be
+      // correlated via attributes if needed
+      val wikiStream = WikiStream.impl[F](client, broadcastHub)
+      val wikiEventLogger = WikiEventLogger(broadcastHub)
 
-        // With Middlewares in place
-        val finalHttpApp = Logger.httpApp(true, true)(httpApp)
+      val helloWorldAlg = HelloWorld.impl[F]
+      val jokeAlg = Jokes.impl[F](client)
 
-        val loggingFiber = Async[F].start(wikiEventLogger.subscribeAndLog)
-        val ingestionFiber = Async[F].start(wikiStream.start)
+      val routes =
+        WikipediaEditWarMonitorRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
+          WikipediaEditWarMonitorRoutes.jokeRoutes[F](jokeAlg)
 
-        ingestionFiber *> loggingFiber *>
-          EmberServerBuilder
-            .default[F]
-            .withHost(ipv4"0.0.0.0")
-            .withPort(port"8080")
-            .withHttpApp(finalHttpApp)
-            .build
-            .useForever
-      }
+      val tracedRoutes = HttpTracingMiddleware[F](routes)
+
+      val httpApp = tracedRoutes.orNotFound
+      // With Middlewares in place
+      val finalHttpApp = Logger.httpApp(true, true)(httpApp)
+
+      val loggingFiber = Async[F].start(wikiEventLogger.subscribeAndLog)
+      val ingestionFiber = Async[F].start(wikiStream.start)
+
+      ingestionFiber *> loggingFiber *>
+        EmberServerBuilder
+          .default[F]
+          .withHost(ipv4"0.0.0.0")
+          .withPort(port"8080")
+          .withHttpApp(finalHttpApp)
+          .build
+          .useForever
     }
   }

@@ -7,15 +7,18 @@ import org.http4s.ServerSentEvent.EventId
 import org.http4s.client.Client
 import org.http4s.headers.{Accept, `Cache-Control`}
 import org.typelevel.ci.CIStringSyntax
+import org.typelevel.otel4s.trace.{SpanKind, Tracer}
 
 import scala.concurrent.duration._
 import SseClient._
+import org.typelevel.otel4s.trace.Tracer
+import org.typelevel.otel4s.trace.Tracer.Implicits.noop
 
 final class SseClient[F[_]] private (
     httpClient: Client[F],
     maxRetries: Option[Int],
     initialRetryInterval: FiniteDuration
-)(implicit temporal: Temporal[F], rt: RaiseThrowable[F]) {
+)(using temporal: Temporal[F], rt: RaiseThrowable[F], tracer: Tracer[F]) {
 
   def stream(uri: Uri): Stream[F, ServerSentEvent] = autoReconnectStream(uri)
 
@@ -107,7 +110,7 @@ object SseClient {
       httpClient: Client[F],
       maxRetries: Option[Int] = DefaultMaxRetries,
       initialRetryInterval: FiniteDuration = DefaultRetryInterval
-  )(implicit temporal: Temporal[F], rt: RaiseThrowable[F]): SseClient[F] =
+  )(using temporal: Temporal[F], rt: RaiseThrowable[F]): SseClient[F] =
     new SseClient(httpClient, maxRetries, initialRetryInterval)
 
   private case class SseMetadata(
