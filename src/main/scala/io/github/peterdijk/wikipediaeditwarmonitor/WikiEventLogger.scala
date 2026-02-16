@@ -29,7 +29,7 @@ final case class WikiEventLogger[F[_]: Async](
       _ <- stream.parEvalMap(10) { event =>
         (Async[F].monotonic, counterRef.updateAndGet(_ + 1)).mapN {
           (currentTime, count) =>
-            formatOutput(count, startTime - currentTime, event)
+            formatOutput(count, currentTime - startTime, event)
         }
       }
     } yield ()
