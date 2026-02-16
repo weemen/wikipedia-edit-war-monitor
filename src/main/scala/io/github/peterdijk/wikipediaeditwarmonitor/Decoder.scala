@@ -17,7 +17,7 @@ object WikiDecoder {
   given wikiEditDecoder: Decoder[WikiEdit] = new Decoder[WikiEdit] {
     override def apply(c: HCursor): Result[WikiEdit] =
       for {
-        id <- c.downField("id").as[Long].map(_.toString)
+        id <- c.downField("meta").downField("id").as[String]
         title <- c.downField("title").as[String]
         user <- c.downField("user").as[String]
         bot <- c.downField("bot").as[Boolean]

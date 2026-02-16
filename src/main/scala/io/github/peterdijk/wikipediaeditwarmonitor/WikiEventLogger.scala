@@ -15,7 +15,7 @@ final case class WikiEventLogger[F[_]: Async](
       elapsedTime: FiniteDuration,
       event: WikiEdit
   ) = println(
-    s"Event #$count | (elapsed: ${elapsedTime.toSeconds}s) | Average rate: ${count.toDouble / elapsedTime.toSeconds} events/s | Data: ${event.toString.take(80)}"
+    s"Event #$count | (elapsed: ${elapsedTime.toSeconds}s) | Average rate: ${count.toDouble / elapsedTime.toSeconds} events/s | WikiEdit: ${event.title} by ${event.user} at ${event.timestamp}"
   )
 
   def subscribeAndLog: F[Unit] =

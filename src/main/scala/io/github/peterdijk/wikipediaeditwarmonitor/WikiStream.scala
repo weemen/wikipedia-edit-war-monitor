@@ -20,8 +20,14 @@ object WikiStream:
   def sseEventToWikiEdit[F[_]: Async]: fs2.Pipe[F, ServerSentEvent, WikiEdit] =
     (stream: fs2.Stream[F, ServerSentEvent]) =>
       stream.evalMap { sse =>
+        val decoded = decode[WikiEdit](sse.data.mkString("\n"))
         Async[F].fromEither(
-          decode[WikiEdit](sse.data.mkString("\n"))
+          decoded.left.map(err =>
+            new RuntimeException(
+              s"Failed to decode SSE data: ${sse.data.mkString("\n")}",
+              err
+            )
+          )
         )
       }
 
