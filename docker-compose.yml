@@ -1,0 +1,28 @@
+
+services:
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.15.0
+    container_name: jaeger
+    ports:
+      # Jaeger UI
+      - "16686:16686"
+      # OTLP gRPC receiver
+      - "4317:4317"
+      # OTLP HTTP receiver
+      - "4318:4318"
+      # Jaeger agent (Thrift)
+      - "5778:5778"
+      # Zipkin compatible endpoint
+      - "9411:9411"
+    environment:
+      # Set collector endpoint
+      - COLLECTOR_OTLP_ENABLED=true
+      - OTEL_SERVICE_NAME=wikipedia-edit-war-monitor
+    restart: unless-stopped
+    networks:
+      - tracing
+
+networks:
+  tracing:
+    driver: bridge
+
