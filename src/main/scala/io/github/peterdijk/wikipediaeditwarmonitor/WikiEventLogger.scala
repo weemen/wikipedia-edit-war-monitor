@@ -20,17 +20,24 @@ final case class WikiEventLogger[F[_]: Async](
     s"Event #$count | (elapsed: ${elapsedTime.toSeconds}s) | Average rate: ${count.toDouble / elapsedTime.toSeconds} events/s | WikiEdit: ${event.title} by ${event.user} at ${event.timestamp}"
   )
 
-  def subscribeAndLog: F[Unit] =
-    val stream = broadcastHub.subscribe(1000)
-
-    val log = for {
+  private def logWithStats: fs2.Pipe[F, WikiEdit, Unit] = { stream =>
+    for {
       startTime <- Stream.eval(Async[F].monotonic)
       counterRef <- Stream.eval(Ref[F].of(0))
       _ <- stream.parEvalMap(10) { event =>
         (Async[F].monotonic, counterRef.updateAndGet(_ + 1)).mapN {
           (currentTime, count) =>
-            formatOutput(count, currentTime - startTime, event)
+            val elapsedTime = currentTime - startTime
+            formatOutput(count, elapsedTime, event)
         }
       }
     } yield ()
-    log.compile.drain
+  }
+
+  def subscribeAndLog: F[Unit] =
+    broadcastHub
+      .subscribe(1000)
+      .through(logWithStats)
+      // add additional operations on the stream
+      .compile
+      .drain
