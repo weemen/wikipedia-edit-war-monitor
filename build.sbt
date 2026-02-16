@@ -24,8 +24,8 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-core" % "0.14.5"
     ),
     testFrameworks += new TestFramework("munit.Framework"),
-    Compile / scalacOptions ++= Seq(
-      "-Wconf:cat=unused:s" // Silence all unused warnings (imports, values, params, etc.)
+    scalacOptions ++= Seq(
+      "-Wconf:msg=unused:s" // Silence all unused warnings (imports, values, params, etc.)
     ),
     Compile / run / fork := true,
     // Enable color support in forked JVM
