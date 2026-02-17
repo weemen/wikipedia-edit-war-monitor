@@ -13,7 +13,7 @@ import org.typelevel.otel4s.trace.{SpanKind, Tracer}
 import org.typelevel.otel4s.Attribute
 
 object StreamTracingMiddleware {
-  def streamTracingMiddleware[F[_]: Async](using tracer: Tracer[F]): fs2.Pipe[F, WikiEdit, TracedWikiEdit] =
+  def apply[F[_]: Async](using tracer: Tracer[F]): fs2.Pipe[F, WikiEdit, TracedWikiEdit] =
     (stream: fs2.Stream[F, WikiEdit]) =>
       stream.evalMap { wikiEdit =>
         tracer

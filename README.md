@@ -161,13 +161,6 @@ case class EditWarAlert(
 4. **View traces in Jaeger UI:**
    - Open http://localhost:16686
    - Select service "WikipediaEditWarMonitor"
-   - See parent-child span relationships:
-     ```
-     process_wiki_edit (800μs)
-     └─ log_wiki_edit (2.5ms)
-     ```
-
-📄 **Full tracing guide:** [docs/running-with-tracing.md](docs/running-with-tracing.md)
 
 ### Development Phases
 
