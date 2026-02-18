@@ -34,12 +34,9 @@ object WikipediaEditWarMonitorServer:
       val wikiStream = WikiStream.impl[F](client, broadcastHub)
       val wikiEventLogger = WikiEventLogger(broadcastHub)
 
-      val helloWorldAlg = HelloWorld.impl[F]
       val jokeAlg = Jokes.impl[F](client)
-
       val routes =
-        WikipediaEditWarMonitorRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
-          WikipediaEditWarMonitorRoutes.jokeRoutes[F](jokeAlg)
+          WikipediaEditWarMonitorRoutes.healthRoutes[F](jokeAlg)
 
       val tracedRoutes = HttpTracingMiddleware[F](routes)
 
