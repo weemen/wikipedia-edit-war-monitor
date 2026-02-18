@@ -1,0 +1,32 @@
+package io.github.peterdijk.wikipediaeditwarmonitor.middleware
+
+import cats.effect.Async
+import cats.syntax.all._
+import org.http4s.client.Client
+import org.http4s.implicits.*
+
+import scala.concurrent.duration.*
+import org.http4s.ServerSentEvent
+import fs2.concurrent.Topic
+import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{WikiEdit, TracedWikiEdit}
+import org.typelevel.otel4s.trace.{SpanKind, Tracer}
+import org.typelevel.otel4s.Attribute
+
+object StreamTracingMiddleware {
+  def apply[F[_]: Async](using tracer: Tracer[F]): fs2.Pipe[F, WikiEdit, TracedWikiEdit] =
+    (stream: fs2.Stream[F, WikiEdit]) =>
+      stream.evalMap { wikiEdit =>
+        tracer
+          .spanBuilder("process_wiki_edit")
+          .withSpanKind(SpanKind.Consumer)
+          .addAttribute(Attribute("wiki.title", wikiEdit.title))
+          .addAttribute(Attribute("wiki.user", wikiEdit.user))
+          .addAttribute(Attribute("wiki.bot", wikiEdit.bot))
+          .addAttribute(Attribute("wiki.server", wikiEdit.serverName))
+          .build
+          .use { span =>
+            val spanContext = span.context
+            Async[F].pure(TracedWikiEdit(wikiEdit, spanContext))
+          }
+      }
+}

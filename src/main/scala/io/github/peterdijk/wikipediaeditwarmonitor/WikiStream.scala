@@ -3,14 +3,18 @@ package io.github.peterdijk.wikipediaeditwarmonitor
 import cats.effect.Async
 import org.http4s.client.Client
 import org.http4s.implicits.*
+
 import scala.concurrent.duration.*
 import org.http4s.ServerSentEvent
 import fs2.concurrent.Topic
+import io.github.peterdijk.wikipediaeditwarmonitor.middleware.StreamTracingMiddleware
 
 // For the Decoder
-import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.WikiEdit
+import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{WikiEdit, TracedWikiEdit}
 import WikiDecoder.given
 import io.circe.jawn.decode
+
+import org.typelevel.otel4s.trace.Tracer
 
 trait WikiStream[F[_]]:
   def start: F[Unit]
@@ -24,18 +28,18 @@ object WikiStream:
         val decoded = decode[WikiEdit](sse.data.mkString("\n"))
         Async[F].fromEither(
           decoded.left.map(err =>
-            new RuntimeException(
-              s"Failed to decode SSE data: ${sse.data.mkString("\n")}",
-              err
+            println(
+              s"Failed to decode SSE data: ${sse.data.mkString("\n")}"
             )
+            err
           )
         )
       }
 
   def impl[F[_]: Async](
       httpClient: Client[F],
-      broadcastHub: Topic[F, WikiEdit]
-  ): WikiStream[F] = new WikiStream[F]:
+      broadcastHub: Topic[F, TracedWikiEdit]
+  )(using tracer: Tracer[F]): WikiStream[F] = new WikiStream[F]:
     def start: F[Unit] =
       val sseClient = SseClient(httpClient, None, 1.second)
       sseClient
@@ -43,6 +47,7 @@ object WikiStream:
           uri"https://stream.wikimedia.org/v2/stream/recentchange"
         )
         .through(sseEventToWikiEdit)
+        .through(StreamTracingMiddleware[F])
         .through(broadcastHub.publish)
         .compile
         .drain

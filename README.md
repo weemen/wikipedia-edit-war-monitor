@@ -140,6 +140,30 @@ case class EditWarAlert(
 
 ## 🚀 How to Start
 
+### Quick Start (with Tracing)
+
+1. **Start Jaeger for distributed tracing:**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Set OpenTelemetry environment variables:**
+   ```bash
+   export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+   export OTEL_SERVICE_NAME=WikipediaEditWarMonitor
+   ```
+
+3. **Run the application:**
+   ```bash
+   sbt run
+   ```
+
+4. **View traces in Jaeger UI:**
+   - Open http://localhost:16686
+   - Select service "WikipediaEditWarMonitor"
+
+### Development Phases
+
 1. **Phase 1:** Use `Http4s` client to simply print the stream of strings from the Wikimedia URL to your console.
 2. **Phase 2:** Implement a Circe decoder to turn those strings into `WikiEdit` objects.
 3. **Phase 3:** Introduce the `Topic` to split the stream into a "Bot Stats" fiber and a "Human Activity" fiber.
