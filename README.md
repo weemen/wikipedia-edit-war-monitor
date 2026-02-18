@@ -87,54 +87,12 @@ Detecting an edit war requires "memory." You need to track how many times `Page 
 
 - **The Learning Point:** Use `cats.effect.Ref` (for shared thread-safe state) or `fs2.Stream.scan` to maintain a rolling window of activity without needing an external database for every single calculation.
 
----
-
-## 🧪 Advanced Features to Add
-
-To turn this from a "weekend project" into a "Senior-level portfolio piece" I might add:
-
-### A. The "Sentiment" Filter
+### 4. The "Sentiment" Filter
 
 Integrate a simple NLP library or a lightweight Scala wrapper for an LLM API.
 
 - **Task:** If a "revert" happens, analyze the comment. If the comment contains aggressive language or certain keywords (e.g., "rvv" - revert vandalism), flag it with higher priority.
 
-### B. Resilience Testing
-
-SSE connections drop constantly.
-
-- **Task:** Implement an exponential backoff retry strategy using `fs2.Stream.retry`. Show that your app can survive a network flicker without losing its place in the stream (using the `Last-Event-ID` header).
-
-### C. Semantic Compression
-
-The raw JSON is massive.
-
-- **Task:** Create a "Domain Model" (Scala Case Classes) that only extracts the 5% of data you actually need. Use Circe's `forProductX` decoders to keep the footprint tiny.
-
----
-
-## 📊 Sample Data Model
-
-The core logic will revolve around a structure like this:
-
-```scala
-case class WikiEdit(
-  title: String,
-  user: String,
-  bot: Boolean,
-  comment: String,
-  timestamp: Long,
-  serverName: String
-)
-
-// The "War" Signal
-case class EditWarAlert(
-  title: String,
-  velocity: Int, // edits per minute
-  participants: Set[String]
-)
-
-```
 
 ---
 
@@ -190,9 +148,3 @@ make clean         # Remove all data including traces
    ```bash
    sbt run
    ```
-   
-### Development Phases
-
-1. **Phase 1:** Use `Http4s` client to simply print the stream of strings from the Wikimedia URL to your console.
-2. **Phase 2:** Implement a Circe decoder to turn those strings into `WikiEdit` objects.
-3. **Phase 3:** Introduce the `Topic` to split the stream into a "Bot Stats" fiber and a "Human Activity" fiber.
