@@ -47,10 +47,9 @@ object WikipediaEditWarMonitorServer:
       // With Middlewares in place
       val finalHttpApp = Logger.httpApp(true, true)(httpApp)
 
-      val loggingFiber = Async[F].start(wikiEventLogger.subscribeAndLog)
-      val ingestionFiber = Async[F].start(wikiStream.start)
-
-      ingestionFiber *> loggingFiber *>
+      // Start background fibers and HTTP server in parallel
+      Async[F].start(wikiEventLogger.subscribeAndLog) *>
+        Async[F].start(wikiStream.start) *>
         EmberServerBuilder
           .default[F]
           .withHost(ipv4"0.0.0.0")

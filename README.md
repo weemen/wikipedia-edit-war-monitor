@@ -140,11 +140,44 @@ case class EditWarAlert(
 
 ## 🚀 How to Start
 
-### Quick Start (with Tracing)
+### Quick Start (Docker)
 
-1. **Start Jaeger for distributed tracing:**
+**Start everything with one command:**
+```bash
+make start
+```
+
+This will:
+- Build the Scala application in Docker
+- Start Jaeger for distributed tracing
+- Start the application with tracing enabled
+- Wait for services to be ready
+
+**Access:**
+- 📊 **Jaeger UI:** http://localhost:16686 (view traces)
+- 🌐 **Application:** http://localhost:8080
+   - http://localhost:8080/hello/world
+   - http://localhost:8080/joke
+
+**Other useful commands:**
+```bash
+make help          # Show all available commands
+make stop          # Stop all services
+make logs          # View logs from all services
+make logs-app      # View application logs only
+make restart       # Restart the application
+make clean         # Remove all data including traces
+```
+
+**Legacy scripts (still available):**
+- `./start.sh` - Same as `make start`
+- `./stop.sh` - Same as `make stop`
+
+### Alternative: Local Development (SBT)
+
+1. **Start Jaeger only:**
    ```bash
-   docker-compose up -d
+   docker-compose up -d jaeger
    ```
 
 2. **Set OpenTelemetry environment variables:**
@@ -153,15 +186,11 @@ case class EditWarAlert(
    export OTEL_SERVICE_NAME=WikipediaEditWarMonitor
    ```
 
-3. **Run the application:**
+3. **Run the application with SBT:**
    ```bash
    sbt run
    ```
-
-4. **View traces in Jaeger UI:**
-   - Open http://localhost:16686
-   - Select service "WikipediaEditWarMonitor"
-
+   
 ### Development Phases
 
 1. **Phase 1:** Use `Http4s` client to simply print the stream of strings from the Wikimedia URL to your console.

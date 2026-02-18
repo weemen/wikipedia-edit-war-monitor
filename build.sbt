@@ -32,6 +32,20 @@ lazy val root = (project in file("."))
     scalacOptions ++= Seq(
       "-Wconf:msg=unused:s" // Silence all unused warnings (imports, values, params, etc.)
     ),
+    // Assembly merge strategy for handling conflicts
+    assembly / assemblyMergeStrategy := {
+      case "module-info.class" => MergeStrategy.discard
+      case PathList("META-INF", "versions", "9", "module-info.class") => MergeStrategy.discard
+      case PathList("META-INF", xs @ _*) => xs match {
+        case "MANIFEST.MF" :: Nil => MergeStrategy.discard
+        case "services" :: _ => MergeStrategy.concat
+        case _ => MergeStrategy.discard
+      }
+      case x if x.endsWith("/module-info.class") => MergeStrategy.discard
+      case x =>
+        val oldStrategy = (assembly / assemblyMergeStrategy).value
+        oldStrategy(x)
+    },
     Compile / run / fork := true,
     // Enable color support in forked JVM
     Compile / run / javaOptions ++= Seq(

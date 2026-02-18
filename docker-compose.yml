@@ -17,6 +17,34 @@ services:
     environment:
       # Set collector endpoint
       - COLLECTOR_OTLP_ENABLED=true
+      - OTEL_SERVICE_NAME=wikipedia-edit-war-monitor
+    restart: unless-stopped
+    networks:
+      - tracing
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:16686"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  wikipedia-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wikipedia-monitor
+    ports:
+      # HTTP server
+      - "8080:8080"
+    environment:
+      # OpenTelemetry configuration
+      - OTEL_SERVICE_NAME=WikipediaEditWarMonitor
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+    depends_on:
+      jaeger:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - tracing
@@ -24,4 +52,3 @@ services:
 networks:
   tracing:
     driver: bridge
-

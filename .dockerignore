@@ -1,0 +1,47 @@
+# Build artifacts
+target/
+project/target/
+project/project/target/
+
+# IDE files
+.idea/
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+.bloop/
+.metals/
+.vscode/
+.bsp/
+
+# Scala IDE
+.scala_dependencies
+.worksheet/
+.cache
+.history
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Mac
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/
+README.md
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore

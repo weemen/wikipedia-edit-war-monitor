@@ -61,9 +61,6 @@ project/plugins/project/
 .scala_dependencies
 .lib/
 
-# Docker
-.dockerignore
-
 .env
 .env.local
 .env.*.local
