@@ -4,6 +4,10 @@ import cats.effect.Sync
 import cats.implicits._
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
+import cats.effect.Async
+import org.http4s.server.staticcontent.fileService
+import org.http4s.server.staticcontent.FileService.Config
+import fs2.io.file.Files
 
 object WikipediaEditWarMonitorRoutes:
 
@@ -28,3 +32,6 @@ object WikipediaEditWarMonitorRoutes:
           resp <- Ok(greeting)
         } yield resp
     }
+
+  def staticFileRoutes[F[_]: Async: Files](systemPath: String, urlPrefix: String): HttpRoutes[F] =
+    fileService(Config(systemPath = systemPath, pathPrefix = urlPrefix))

@@ -26,7 +26,8 @@ lazy val root = (project in file("."))
       "org.typelevel" %% "munit-cats-effect" % MunitCatsEffectVersion % Test,
       "ch.qos.logback" % "logback-classic" % LogbackVersion,
       "org.fusesource.jansi" % "jansi" % JansiVersion,
-      "io.circe" %% "circe-core" % "0.14.5"
+      "io.circe" %% "circe-core" % "0.14.5",
+      "com.typesafe" % "config" % "1.4.3"
     ),
     testFrameworks += new TestFramework("munit.Framework"),
     scalacOptions ++= Seq(
