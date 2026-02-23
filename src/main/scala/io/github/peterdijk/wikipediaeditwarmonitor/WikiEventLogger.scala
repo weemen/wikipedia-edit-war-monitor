@@ -14,6 +14,38 @@ final case class WikiEventLogger[F[_]: Async](
     broadcastHub: Topic[F, TracedWikiEdit]
 )(using tracer: Tracer[F]):
 
+  private def addSpan: fs2.Pipe[F, TracedWikiEdit, TracedWikiEdit] = _.parEvalMap(10) { tracedEvent =>
+    tracer
+      .spanBuilder("log_wiki_edit")
+      .withParent(tracedEvent.spanContext)
+      .withSpanKind(SpanKind.Internal)
+      .addAttribute(Attribute("wiki.title", tracedEvent.edit.title))
+      .addAttribute(Attribute("wiki.user", tracedEvent.edit.user))
+      .build
+      .use { span =>
+        Async[F].pure(tracedEvent)
+      }
+  }
+
+  private def addStats: fs2.Pipe[F, TracedWikiEdit, (TracedWikiEdit, Int, FiniteDuration)] = { stream =>
+    Stream.eval(Async[F].monotonic).flatMap { startTime =>
+      Stream.eval(Ref[F].of(0)).flatMap { counterRef =>
+        stream.parEvalMap(10) { tracedEvent =>
+          for {
+            currentTime <- Async[F].monotonic
+            count <- counterRef.updateAndGet(_ + 1)
+            elapsedTime = currentTime - startTime
+          } yield (tracedEvent, count, elapsedTime)
+        }
+      }
+    }
+  }
+
+  private def printLogs: fs2.Pipe[F, (TracedWikiEdit, Int, FiniteDuration), Unit] = _.evalMap {
+    case (tracedEvent, count, elapsedTime) =>
+      Async[F].delay(formatOutput(count, elapsedTime, tracedEvent.edit))
+  }
+
   private def formatOutput(
       count: Int,
       elapsedTime: FiniteDuration,
@@ -22,41 +54,11 @@ final case class WikiEventLogger[F[_]: Async](
     s"Event #$count | (elapsed: ${elapsedTime.toSeconds}s) | Average rate: ${count.toDouble / elapsedTime.toSeconds} events/s | WikiEdit: ${event.title} by ${event.user} at ${event.timestamp}"
   )
 
-  private def logWithStats: fs2.Pipe[F, TracedWikiEdit, Unit] = { stream =>
-    for {
-      startTime <- Stream.eval(Async[F].monotonic)
-      counterRef <- Stream.eval(Ref[F].of(0))
-      _ <- stream.parEvalMap(10) { tracedEvent =>
-        // Create a child span by setting the parent context
-        tracer
-          .spanBuilder("log_wiki_edit")
-          .withParent(tracedEvent.spanContext)
-          .withSpanKind(SpanKind.Internal)
-          .addAttribute(Attribute("wiki.title", tracedEvent.edit.title))
-          .addAttribute(Attribute("wiki.user", tracedEvent.edit.user))
-          .build
-          .use { span =>
-            for {
-              currentTime <- Async[F].monotonic
-              count <- counterRef.updateAndGet(_ + 1)
-              elapsedTime = currentTime - startTime
-
-              // Add logging-specific attributes to the span
-              _ <- span.addAttribute(Attribute("log.count", count.toLong))
-              _ <- span.addAttribute(Attribute("log.elapsed_seconds", elapsedTime.toSeconds))
-
-              // Format and print output
-              _ <- Async[F].delay(formatOutput(count, elapsedTime, tracedEvent.edit))
-              // Child span automatically ends when .use block completes
-            } yield ()
-          }
-      }
-    } yield ()
-  }
-
   def subscribeAndLog: F[Unit] =
     broadcastHub
       .subscribe(1000)
-      .through(logWithStats)
+      .through(addSpan)
+      .through(addStats)
+      .through(printLogs)
       .compile
       .drain
