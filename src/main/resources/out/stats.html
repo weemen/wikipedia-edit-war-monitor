@@ -164,8 +164,8 @@
                 const topRevertCounts = Object.entries(snapshot.revertsCount)
                     .sort(([, a], [, b]) => b.count - a.count)
                     .slice(0, 20);
-                revertsCountDiv.innerHTML = '<h2>Top 20 Reverted Pages</h2><ul>' +
-                    topRevertCounts.map(([title, wikiPage]) => `<li><a href="${wikiPage.title_url}" target="_blank">${title}</a>: ${wikiPage.count}</li>`).join('') +
+                revertsCountDiv.innerHTML = '<h2>Top 20 Edit wars on Pages</h2><ul>' +
+                    topRevertCounts.map(([title, wikiPage]) => `<li><a href="${wikiPage.title_url}" target="_blank">${wikiPage.title_url}</a>: ${wikiPage.count}</li>`).join('') +
                     '</ul>';
             }
         };
