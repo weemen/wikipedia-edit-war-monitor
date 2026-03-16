@@ -74,7 +74,7 @@ object WikiDecoder {
           }*)
 
       Json.obj(
-        "titles" -> objFromPageMap(s.titles)
+        "revertsCount" -> objFromPageMap(s.revertsCount)
       )
     }
   }

@@ -104,6 +104,7 @@
             <div class="wikicolumn usercounts"></div>
             <div class="wikicolumn pagecounts"></div>
             <div class="wikicolumn botratio"></div>
+            <div class="wikicolumn revertsCount"></div>
         </div>
     </div>
 </div>
@@ -114,6 +115,7 @@
     const userCountsDiv = document.querySelector('.usercounts');
     const pageCountsDiv = document.querySelector('.pagecounts');
     const botRatioDiv = document.querySelector('.botratio');
+    const revertsCountDiv = document.querySelector('.revertsCount');
 
     let socket;
 
@@ -149,6 +151,14 @@
             botRatioDiv.innerHTML = '<h2>Bot Ratio</h2><ul>' +
                 `<li>Human: ${humanCount}</li>` +
                 `<li>Bot: ${botCount}</li>` +
+                '</ul>';
+
+            // Update Reverts War counts
+            const topRevertCounts = Object.entries(snapshot.revertsCount)
+                .sort(([, a], [, b]) => b.count - a.count)
+                .slice(0, 20);
+            revertsCountDiv.innerHTML = '<h2>Top 20 Reverted Pages</h2><ul>' +
+                topRevertCounts.map(([title, wikiPage]) => `<li><a href="${wikiPage.title_url}" target="_blank">${title}</a>: ${wikiPage.count}</li>`).join('') +
                 '</ul>';
         };
 

@@ -39,6 +39,6 @@ object WikiTypes {
   )
 
   case class WikiRevertsSnapshot(
-      titles: Map[WikiPage, Int]
+      revertsCount: Map[WikiPage, Int]
   )
 }

@@ -66,13 +66,14 @@ final case class EditWarConsumer[F[_]: Async](
     _.filter(_.edit.editType == EditType.edit)
 
   def filterReverts[F[_]: Async]: fs2.Pipe[F, TracedWikiEdit, TracedWikiEdit] = {
-    val revertPatterns = List(
-      "revert".r,
-      "undid".r,
-      "revertides".r
-      // TODO: add more languages
-    )
-    _.filter { edit =>
-      revertPatterns.exists(_.findFirstIn(edit.edit.comment).isDefined)
-    }
+    _.filter(_.edit.comment.toLowerCase.contains("revert"))
+    // val revertPatterns = List(
+    //   "revert".r,
+    //   "undid".r,
+    //   "revertides".r
+    //   // TODO: add more languages
+    // )
+    // _.filter { edit =>
+    //   revertPatterns.exists(_.findFirstIn(edit.edit.comment).isDefined)
+    // }
   }
