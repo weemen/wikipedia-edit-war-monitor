@@ -2,8 +2,7 @@ package io.github.peterdijk.wikipediaeditwarmonitor
 
 import io.circe.Decoder.Result
 import io.circe.{Decoder, Encoder, HCursor, Json}
-import io.github.peterdijk.wikipediaeditwarmonitor.EditType
-import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{WikiEdit, WikiCountsSnapshot, WikiPage}
+import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{EditType, WikiEdit, WikiCountsSnapshot, WikiRevertsSnapshot, WikiPage}
 
 object WikiDecoder {
   given editType: Decoder[EditType] = new Decoder[EditType] {
@@ -53,6 +52,29 @@ object WikiDecoder {
         "users" -> objFromIntMap(s.users),
         "titles" -> objFromPageMap(s.titles),
         "bots" -> botsJson
+      )
+    }
+  }
+
+  given wikiRevertsSnapshotEncoder: Encoder[WikiRevertsSnapshot] = new Encoder[WikiRevertsSnapshot] {
+    override def apply(s: WikiRevertsSnapshot): Json = {
+      def objFromIntMap(m: Map[String, Int]): Json =
+        Json.obj(m.toList.map { case (k, v) => (k, Json.fromInt(v)) }*)
+
+      def objFromPage(title_url: String, count: Int): Json =
+        Json.obj(
+          "count" -> Json.fromInt(count),
+          "title_url" -> Json.fromString(title_url)
+        )
+
+      def objFromPageMap(m: Map[WikiPage, Int]): Json =
+        Json.obj(m.toList.map {
+          case (wikiPage, count) =>
+            (wikiPage.title, objFromPage(wikiPage.title_url, count))
+          }*)
+
+      Json.obj(
+        "titles" -> objFromPageMap(s.titles)
       )
     }
   }

@@ -2,14 +2,14 @@ package io.github.peterdijk.wikipediaeditwarmonitor
 
 import org.typelevel.otel4s.trace.SpanContext
 
-enum EditType {
-  case `categorize`
-  case `edit`
-  case `log`
-  case `new`
-}
-
 object WikiTypes {
+
+  enum EditType {
+      case `categorize`
+      case `edit`
+      case `log`
+      case `new`
+  }
   case class WikiEdit(
       id: String,
       title: String,
@@ -36,5 +36,9 @@ object WikiTypes {
       users: Map[String, Int],
       titles: Map[WikiPage, Int],
       bots: Map[Boolean, Int]
+  )
+
+  case class WikiRevertsSnapshot(
+      titles: Map[WikiPage, Int]
   )
 }

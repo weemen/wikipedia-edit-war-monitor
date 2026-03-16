@@ -10,7 +10,7 @@ import fs2.concurrent.Topic
 import io.github.peterdijk.wikipediaeditwarmonitor.middleware.StreamTracingMiddleware
 
 // For the Decoder
-import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{WikiEdit, TracedWikiEdit}
+import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{EditType, WikiEdit, TracedWikiEdit}
 import WikiDecoder.given
 import io.circe.jawn.decode
 

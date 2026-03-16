@@ -11,7 +11,7 @@ import fs2.io.file.Files
 import org.http4s.websocket.WebSocketFrame
 import org.http4s.server.websocket.WebSocketBuilder2
 import fs2.concurrent.Topic
-import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{TracedWikiEdit, WikiCountsSnapshot}
+import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{TracedWikiEdit, WikiCountsSnapshot, WikiRevertsSnapshot}
 import io.circe.syntax.*
 import org.http4s.circe.*
 import io.github.peterdijk.wikipediaeditwarmonitor.WikiDecoder.given
@@ -34,14 +34,20 @@ object WikipediaEditWarMonitorRoutes:
 
   def webSocketRoutes[F[_]: Async](
       wsb: WebSocketBuilder2[F],
-      broadcastHub: Topic[F, WikiCountsSnapshot]
+      broadcastHub: Topic[F, WikiCountsSnapshot],
+      broadcastEditWarCount: Topic[F, WikiRevertsSnapshot],
   ): HttpRoutes[F] =
     val dsl = new Http4sDsl[F] {}
     import dsl.*
     HttpRoutes.of[F] {
       case GET -> Root / "ws" =>
-        val send = broadcastHub
+        val countStream = broadcastHub
           .subscribe(100)
           .map(event => WebSocketFrame.Text(event.asJson.noSpaces))
-        wsb.build(send, _.drain)
+        val warStream = broadcastEditWarCount
+          .subscribe(100)
+          .map(event => WebSocketFrame.Text(event.asJson.noSpaces))
+
+        val combinedStream = countStream.merge(warStream)
+        wsb.build(combinedStream, _.drain)
     }
