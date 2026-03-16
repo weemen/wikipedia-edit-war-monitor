@@ -129,37 +129,45 @@
         socket.onmessage = (event) => {
             const snapshot = JSON.parse(event.data);
 
-            // Update Users
-            const topUsers = Object.entries(snapshot.users)
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 20);
-            userCountsDiv.innerHTML = '<h2>Top 20 Users</h2><ul>' +
-                topUsers.map(([user, count]) => `<li>${user}: ${count}</li>`).join('') +
-                '</ul>';
+            // Update Users (only if users data exists)
+            if (snapshot.users) {
+                const topUsers = Object.entries(snapshot.users)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 20);
+                userCountsDiv.innerHTML = '<h2>Top 20 Users</h2><ul>' +
+                    topUsers.map(([user, count]) => `<li>${user}: ${count}</li>`).join('') +
+                    '</ul>';
+            }
 
-            // Update Pages
-            const topTitles = Object.entries(snapshot.titles)
-                .sort(([, a], [, b]) => b.count - a.count)
-                .slice(0, 20);
-            pageCountsDiv.innerHTML = '<h2>Top 20 Edited Pages</h2><ul>' +
-                topTitles.map(([title, wikiPage]) => `<li><a href="${wikiPage.title_url}" target="_blank">${title}</a>: ${wikiPage.count}</li>`).join('') +
-                '</ul>';
+            // Update Pages (only if titles data exists)
+            if (snapshot.titles) {
+                const topTitles = Object.entries(snapshot.titles)
+                    .sort(([, a], [, b]) => b.count - a.count)
+                    .slice(0, 20);
+                pageCountsDiv.innerHTML = '<h2>Top 20 Edited Pages</h2><ul>' +
+                    topTitles.map(([title, wikiPage]) => `<li><a href="${wikiPage.title_url}" target="_blank">${title}</a>: ${wikiPage.count}</li>`).join('') +
+                    '</ul>';
+            }
 
-            // Update Bot Ratio
-            const botCount = snapshot.bots.true || 0;
-            const humanCount = snapshot.bots.false || 0;
-            botRatioDiv.innerHTML = '<h2>Bot Ratio</h2><ul>' +
-                `<li>Human: ${humanCount}</li>` +
-                `<li>Bot: ${botCount}</li>` +
-                '</ul>';
+            // Update Bot Ratio (only if bots data exists)
+            if (snapshot.bots) {
+                const botCount = snapshot.bots.true || 0;
+                const humanCount = snapshot.bots.false || 0;
+                botRatioDiv.innerHTML = '<h2>Bot Ratio</h2><ul>' +
+                    `<li>Human: ${humanCount}</li>` +
+                    `<li>Bot: ${botCount}</li>` +
+                    '</ul>';
+            }
 
-            // Update Reverts War counts
-            const topRevertCounts = Object.entries(snapshot.revertsCount)
-                .sort(([, a], [, b]) => b.count - a.count)
-                .slice(0, 20);
-            revertsCountDiv.innerHTML = '<h2>Top 20 Reverted Pages</h2><ul>' +
-                topRevertCounts.map(([title, wikiPage]) => `<li><a href="${wikiPage.title_url}" target="_blank">${title}</a>: ${wikiPage.count}</li>`).join('') +
-                '</ul>';
+            // Update Reverts War counts (only if revertsCount data exists)
+            if (snapshot.revertsCount) {
+                const topRevertCounts = Object.entries(snapshot.revertsCount)
+                    .sort(([, a], [, b]) => b.count - a.count)
+                    .slice(0, 20);
+                revertsCountDiv.innerHTML = '<h2>Top 20 Reverted Pages</h2><ul>' +
+                    topRevertCounts.map(([title, wikiPage]) => `<li><a href="${wikiPage.title_url}" target="_blank">${title}</a>: ${wikiPage.count}</li>`).join('') +
+                    '</ul>';
+            }
         };
 
         socket.onclose = () => {
