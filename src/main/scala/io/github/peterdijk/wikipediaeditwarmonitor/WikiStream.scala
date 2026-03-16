@@ -52,7 +52,6 @@ object WikiStream:
           uri"https://stream.wikimedia.org/v2/stream/recentchange"
         )
         .through(sseEventToWikiEdit)
-        .through(filterOnlyEdits)
         .through(StreamTracingMiddleware[F])
         .through(broadcastHub.publish)
         .compile
