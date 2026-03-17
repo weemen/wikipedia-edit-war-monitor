@@ -47,7 +47,7 @@ start: check-docker ## Start all services (Jaeger + Wikipedia Monitor)
 	@echo "$(GREEN)✅ Services are running!$(NC)"
 	@echo ""
 	@echo "$(BLUE)📊 Jaeger UI:        http://localhost:16686$(NC)"
-	@echo "$(BLUE)🌐 Application API:  http://localhost:8080$(NC)"
+	@echo "$(BLUE)🌐 Application API:  http://localhost:8080/stats.html$(NC)"
 	@echo ""
 	@echo "$(BLUE)📝 Useful commands:$(NC)"
 	@echo "   make logs          - View logs from all services"

@@ -2,17 +2,19 @@ package io.github.peterdijk.wikipediaeditwarmonitor.consumers
 import cats.effect.{Async, Ref}
 import com.typesafe.config.ConfigFactory
 import fs2.concurrent.Topic
-import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{WikiCountsSnapshot, TracedWikiEdit, WikiPage}
+import io.github.peterdijk.wikipediaeditwarmonitor.WikiTypes.{TracedWikiEdit, WikiCountsSnapshot, WikiPage}
 import cats.syntax.all.*
 
 import scala.concurrent.duration.*
 import fs2.io.file.Files
 import fs2.Stream
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.trace.Tracer
 
 final case class StatsConsumer[F[_]: Async: cats.Parallel: Files](
     broadcastHub: Topic[F, TracedWikiEdit],
     broadcastHubWikiCounts: Topic[F, WikiCountsSnapshot]
-):
+)(using tracer: Tracer[F]):
 
   def countEdits: F[Unit] = {
     val stream = broadcastHub.subscribe(1000)
@@ -55,11 +57,18 @@ final case class StatsConsumer[F[_]: Async: cats.Parallel: Files](
       botCountRef: Ref[F, Map[Boolean, Int]]
   ): F[Unit] = {
     val suffix = if (event.edit.bot) then "Bot" else "Human"
-    (
-      incrementCount(s"${event.edit.user} ($suffix)", userCountRef, "user"),
-      incrementTitlesCount(WikiPage(event.edit.title, event.edit.title_url), titleCountRef, "page"),
-      incrementCount(event.edit.bot, botCountRef, "bot")
-    ).parTupled.void
+    tracer
+      .spanBuilder("increment_counts")
+      .withParent(event.spanContext)
+      .addAttribute(Attribute("wiki.bot", event.edit.bot))
+      .build
+      .use { _ =>
+        (
+          incrementCount(s"${event.edit.user} ($suffix)", userCountRef, "user"),
+          incrementTitlesCount(WikiPage(event.edit.title, event.edit.title_url), titleCountRef, "page"),
+          incrementCount(event.edit.bot, botCountRef, "bot")
+        ).parTupled.void
+      }
   }
 
   private def incrementCount[K](key: K, ref: Ref[F, Map[K, Int]], label: String): F[Unit] =

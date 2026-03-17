@@ -1,92 +1,117 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wikipedia edit war monitor</title>
     <style>
-        body {
-            font-family: sans-serif;
-            background-color: #f6f6f6;
-            margin: 0;
-            padding: 0;
-            display: flex;
-        }
-        #mw-navigation {
-            width: 160px;
-            padding: 20px;
-            background-color: #f6f6f6;
-            border-right: 1px solid #a7d7f9;
-            font-size: 0.8em;
-        }
-        #content {
-            flex-grow: 1;
-            background-color: #ffffff;
-            border: 1px solid #a7d7f9;
-            border-right-width: 0;
-            margin-top: 10px;
-            padding: 20px 40px;
-        }
-        h1 {
-            font-family: 'Linux Libertine', 'Georgia', 'Times', serif;
-            font-size: 1.8em;
-            border-bottom: 1px solid #a2a9b1;
-            margin-bottom: 0.25em;
-            padding-bottom: 0.17em;
-        }
-        h2 {
-            font-family: 'Linux Libertine', 'Georgia', 'Times', serif;
-            font-size: 1.3em;
-            border-bottom: 1px solid #a2a9b1;
-            margin-bottom: 0.5em;
-            padding-bottom: 0.1em;
-        }
-        #siteSub {
-            font-size: 0.8em;
-            color: #54595d;
-            margin-bottom: 1em;
-        }
-        #bodyContent {
-            font-size: 0.9em;
-            line-height: 1.6;
-        }
-        .vector-menu-heading {
-            color: #54595d;
-            margin: 1em 0 0.5em;
-            font-weight: normal;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin-bottom: 0.3em;
-        }
-        a {
-            text-decoration: none;
-            color: #0645ad;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
+      body {
+        font-family: sans-serif;
+        background-color: #f6f6f6;
+        margin: 0;
+        padding: 0;
+        display: flex;
+      }
+      #mw-navigation {
+        width: 160px;
+        padding: 20px;
+        background-color: #f6f6f6;
+        border-right: 1px solid #a7d7f9;
+        font-size: 0.8em;
+      }
+      #content {
+        flex-grow: 1;
+        background-color: #ffffff;
+        border: 1px solid #a7d7f9;
+        border-right-width: 0;
+        margin-top: 10px;
+        padding: 20px 40px;
+      }
+      h1 {
+        font-family: "Linux Libertine", "Georgia", "Times", serif;
+        font-size: 1.8em;
+        border-bottom: 1px solid #a2a9b1;
+        margin-bottom: 0.25em;
+        padding-bottom: 0.17em;
+      }
+      h2 {
+        font-family: "Linux Libertine", "Georgia", "Times", serif;
+        font-size: 1.3em;
+        border-bottom: 1px solid #a2a9b1;
+        margin-bottom: 0.5em;
+        padding-bottom: 0.1em;
+      }
+      #siteSub {
+        font-size: 0.8em;
+        color: #54595d;
+        margin-bottom: 1em;
+      }
+      #bodyContent {
+        font-size: 0.9em;
+        line-height: 1.6;
+      }
+      .vector-menu-heading {
+        color: #54595d;
+        margin: 1em 0 0.5em;
+        font-weight: normal;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+        margin-bottom: 0.3em;
+      }
+      a {
+        text-decoration: none;
+        color: #0645ad;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
 
-        .wikicolumn {
-            float: left;
-            width: 33.33%;
-        }
+      .wikicolumn {
+        float: left;
+        width: 33.33%;
+      }
 
-        .wikirow:after {
-            content: "";
-            display: table;
-            clear: both;
+      .wikirow:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      .high-revert {
+        background-color: #ffcccc;
+        font-weight: bold;
+        padding: 2px 4px;
+        border-radius: 3px;
+      }
+
+      @keyframes redBlink {
+        0%,
+        100% {
+          background-color: #ffffff;
         }
+        50% {
+          background-color: #ff0000;
+        }
+      }
+
+      body.alert-blink {
+        animation: redBlink 1s 3;
+      }
     </style>
-</head>
-<body>
-<div id="mw-navigation">
-    <img src="https://en.wikipedia.org/static/images/project-logos/enwiki.png" alt="Wikipedia Logo" width="120">
-    <div class="vector-menu-heading">Navigation</div>
-    <ul>
+  </head>
+  <body>
+    <div id="mw-navigation">
+      <img
+        src="https://en.wikipedia.org/static/images/project-logos/enwiki.png"
+        alt="Wikipedia Logo"
+        width="120"
+      />
+      <div class="vector-menu-heading">Navigation</div>
+      <ul>
         <li><a href="#">Main page</a></li>
         <li><a href="#">Contents</a></li>
         <li><a href="#">Current events</a></li>
@@ -94,94 +119,137 @@
         <li><a href="#">About Wikipedia</a></li>
         <li><a href="#">Contact us</a></li>
         <li><a href="#">Donate</a></li>
-    </ul>
-</div>
-<div id="content">
-    <h1 id="firstHeading">Wikipedia edit war monitor</h1>
-    <div id="siteSub">Built by Peter van Dijk, Steph Cattoir and Leon Weemen</div>
-    <div id="bodyContent">
-        <div class="wikirow">
-            <div class="wikicolumn usercounts"></div>
-            <div class="wikicolumn pagecounts"></div>
-            <div class="wikicolumn botratio"></div>
-            <div class="wikicolumn revertsCount"></div>
-        </div>
+      </ul>
     </div>
-</div>
-<script>
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    <div id="content">
+      <h1 id="firstHeading">Wikipedia edit war monitor</h1>
+      <div id="siteSub">
+        Built by Peter van Dijk, Steph Cattoir and Leon Weemen
+      </div>
+      <div id="bodyContent">
+        <div class="wikirow">
+          <div class="wikicolumn usercounts"></div>
+          <div class="wikicolumn pagecounts"></div>
+          <div class="wikicolumn botratio"></div>
+          <div class="wikicolumn revertsCount"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
 
-    const userCountsDiv = document.querySelector('.usercounts');
-    const pageCountsDiv = document.querySelector('.pagecounts');
-    const botRatioDiv = document.querySelector('.botratio');
-    const revertsCountDiv = document.querySelector('.revertsCount');
+      const userCountsDiv = document.querySelector(".usercounts");
+      const pageCountsDiv = document.querySelector(".pagecounts");
+      const botRatioDiv = document.querySelector(".botratio");
+      const revertsCountDiv = document.querySelector(".revertsCount");
 
-    let socket;
+      let socket;
+      const PAGE_ALERT_DURATION = 3000; // Duration to keep the alert (in milliseconds)
+      const REVERT_THRESHOLD = 1;
 
-    function connect() {
+      function connect() {
         socket = new WebSocket(wsUrl);
 
         socket.onopen = () => {
-            console.log('Connected to WebSocket');
+          console.log("Connected to WebSocket");
         };
 
         socket.onmessage = (event) => {
-            const snapshot = JSON.parse(event.data);
+          const snapshot = JSON.parse(event.data);
 
-            // Update Users (only if users data exists)
-            if (snapshot.users) {
-                const topUsers = Object.entries(snapshot.users)
-                    .sort(([, a], [, b]) => b - a)
-                    .slice(0, 20);
-                userCountsDiv.innerHTML = '<h2>Top 20 Users</h2><ul>' +
-                    topUsers.map(([user, count]) => `<li>${user}: ${count}</li>`).join('') +
-                    '</ul>';
-            }
+          // Update Users (only if users data exists)
+          if (snapshot.users) {
+            const topUsers = Object.entries(snapshot.users)
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 20);
+            userCountsDiv.innerHTML =
+              "<h2>Top 20 Users</h2><ul>" +
+              topUsers
+                .map(([user, count]) => `<li>${user}: ${count}</li>`)
+                .join("") +
+              "</ul>";
+          }
 
-            // Update Pages (only if titles data exists)
-            if (snapshot.titles) {
-                const topTitles = Object.entries(snapshot.titles)
-                    .sort(([, a], [, b]) => b.count - a.count)
-                    .slice(0, 20);
-                pageCountsDiv.innerHTML = '<h2>Top 20 Edited Pages</h2><ul>' +
-                    topTitles.map(([title, wikiPage]) => `<li><a href="${wikiPage.title_url}" target="_blank">${title}</a>: ${wikiPage.count}</li>`).join('') +
-                    '</ul>';
-            }
+          // Update Pages (only if titles data exists)
+          if (snapshot.titles) {
+            const topTitles = Object.entries(snapshot.titles)
+              .sort(([, a], [, b]) => b.count - a.count)
+              .slice(0, 20);
+            pageCountsDiv.innerHTML =
+              "<h2>Top 20 Edited Pages</h2><ul>" +
+              topTitles
+                .map(
+                  ([title, wikiPage]) =>
+                    `<li><a href="${wikiPage.title_url}" target="_blank">${title}</a>: ${wikiPage.count}</li>`,
+                )
+                .join("") +
+              "</ul>";
+          }
 
-            // Update Bot Ratio (only if bots data exists)
-            if (snapshot.bots) {
-                const botCount = snapshot.bots.true || 0;
-                const humanCount = snapshot.bots.false || 0;
-                botRatioDiv.innerHTML = '<h2>Bot Ratio</h2><ul>' +
-                    `<li>Human: ${humanCount}</li>` +
-                    `<li>Bot: ${botCount}</li>` +
-                    '</ul>';
-            }
+          // Update Bot Ratio (only if bots data exists)
+          if (snapshot.bots) {
+            const botCount = snapshot.bots.true || 0;
+            const humanCount = snapshot.bots.false || 0;
+            botRatioDiv.innerHTML =
+              "<h2>Bot Ratio</h2><ul>" +
+              `<li>Human: ${humanCount}</li>` +
+              `<li>Bot: ${botCount}</li>` +
+              "</ul>";
+          }
 
-            // Update Reverts War counts (only if revertsCount data exists)
-            if (snapshot.revertsCount) {
-                const topRevertCounts = Object.entries(snapshot.revertsCount)
-                    .sort(([, a], [, b]) => b.count - a.count)
-                    .slice(0, 20);
-                revertsCountDiv.innerHTML = '<h2>Top 20 Edit wars on Pages</h2><ul>' +
-                    topRevertCounts.map(([title, wikiPage]) => `<li><a href="${wikiPage.title_url}" target="_blank">${wikiPage.title_url}</a>: ${wikiPage.count}</li>`).join('') +
-                    '</ul>';
+          // Update Reverts War counts (only if revertsCount data exists)
+          if (snapshot.revertsCount) {
+            const topRevertCounts = Object.entries(snapshot.revertsCount)
+              .sort(([, a], [, b]) => b.count - a.count)
+              .slice(0, 20);
+
+            // Check if any count is higher than the threshold
+            const hasHighReverts = topRevertCounts.some(
+              ([, wikiPage]) => wikiPage.count > REVERT_THRESHOLD,
+            );
+
+            revertsCountDiv.innerHTML =
+              "<h2>Top 20 Edit wars on Pages</h2><ul>" +
+              topRevertCounts
+                .map(([title, wikiPage]) => {
+                  const className =
+                    wikiPage.count > REVERT_THRESHOLD
+                      ? ' class="high-revert"'
+                      : "";
+                  return `<li${className}><a href="${wikiPage.title_url}" target="_blank">${wikiPage.title_url.substring(0, 50)}</a>: ${wikiPage.count}</li>`;
+                })
+                .join("") +
+              "</ul>";
+
+            // Trigger red blink animation if there are high reverts
+            if (hasHighReverts) {
+              document.body.classList.remove("alert-blink");
+              // Force reflow to restart animation
+              void document.body.offsetWidth;
+              document.body.classList.add("alert-blink");
+              // Remove class after animation completes (3 seconds)
+              setTimeout(() => {
+                document.body.classList.remove("alert-blink");
+              }, PAGE_ALERT_DURATION);
             }
+          }
         };
 
         socket.onclose = () => {
-            console.log('Disconnected from WebSocket. Attempting to reconnect in 5 seconds...');
-            setTimeout(connect, 5000);
+          console.log(
+            "Disconnected from WebSocket. Attempting to reconnect in 5 seconds...",
+          );
+          setTimeout(connect, 5000);
         };
 
         socket.onerror = (error) => {
-            console.error('WebSocket Error:', error);
-            socket.close();
+          console.error("WebSocket Error:", error);
+          socket.close();
         };
-    }
+      }
 
-    connect();
-</script>
-</body>
+      connect();
+    </script>
+  </body>
 </html>

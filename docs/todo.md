@@ -1,10 +1,8 @@
 - [x] add page url as link to html
 - [x] logging extra pipe
 - [x] filter stream to only process page `edits`
+- [x] Edit War Detector
 - [ ] only top20 should be sent to frontend, and sorted by backend
 - [ ] stats route
 - [ ] test coverage
 - [ ] tracing in logging to its own pipe
-- [ ] Edit War Detector
-  - [ ] how can we detect a revert?
-  - [ ] ...
